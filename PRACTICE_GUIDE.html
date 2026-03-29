@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AWS CodeCommit — Hands-On Practice Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:      #f8f9fb;
+  --surface: #ffffff;
+  --border:  #e2e8f0;
+  --accent:  #FF9900;   /* AWS orange */
+  --blue:    #232F3E;   /* AWS dark */
+  --teal:    #00A1C9;
+  --green:   #1DB954;
+  --red:     #e53e3e;
+  --yellow:  #d69e2e;
+  --text:    #1a202c;
+  --muted:   #718096;
+  --code-bg: #1e2533;
+  --code-fg: #a8d8b9;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* ── Top bar ── */
+.topbar {
+  background: var(--blue);
+  color: white;
+  padding: 0 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+.topbar-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.aws-badge {
+  background: var(--accent);
+  color: var(--blue);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+.topbar-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+}
+.topbar-links a {
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+.topbar-links a:hover { color: var(--accent); }
+
+/* ── Layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+/* ── Sidebar ── */
+aside {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 32px 0;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+.sidebar-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 20px;
+  margin-bottom: 6px;
+  margin-top: 20px;
+}
+.sidebar-section-title:first-child { margin-top: 0; }
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 20px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.sidebar-link:hover {
+  color: var(--blue);
+  background: #f0f4f8;
+  border-left-color: var(--accent);
+}
+.sidebar-link .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ── Main content ── */
+main {
+  padding: 48px 56px 80px;
+  max-width: 900px;
+}
+
+/* ── Hero card ── */
+.hero-card {
+  background: var(--blue);
+  border-radius: 16px;
+  padding: 40px 48px;
+  margin-bottom: 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  right: -40px; top: -40px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  border: 40px solid rgba(255,153,0,0.12);
+}
+.hero-card::after {
+  content: '';
+  position: absolute;
+  right: 60px; bottom: -60px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  border: 30px solid rgba(0,161,201,0.1);
+}
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.hero-card h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.hero-card p {
+  color: rgba(255,255,255,0.65);
+  font-size: 15px;
+  max-width: 480px;
+  margin-bottom: 24px;
+}
+.hero-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.hero-tag {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 100px;
+}
+
+/* ── Section ── */
+.section { margin-bottom: 64px; }
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--accent);
+  display: inline-block;
+}
+
+h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--blue);
+  margin: 28px 0 10px;
+}
+
+p { color: #4a5568; margin-bottom: 14px; }
+
+/* ── Step cards ── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+
+.step-card {
+  display: flex;
+  gap: 0;
+  position: relative;
+}
+
+.step-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--blue);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.step-line {
+  width: 2px;
+  flex: 1;
+  background: var(--border);
+  margin: 4px 0;
+  min-height: 20px;
+}
+.step-card:last-child .step-line { display: none; }
+
+.step-body {
+  flex: 1;
+  padding: 0 0 32px 16px;
+  padding-top: 5px;
+}
+
+.step-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+.step-desc { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+
+/* ── Code blocks ── */
+.code-block {
+  background: var(--code-bg);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px 0 16px;
+  border: 1px solid #2d3748;
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid #2d3748;
+  background: #161e2e;
+}
+
+.code-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: #2d3748;
+  border: none;
+  color: #a0aec0;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+.copy-btn:hover { background: var(--accent); color: var(--blue); }
+.copy-btn.copied { background: var(--green); color: white; }
+
+pre {
+  padding: 20px;
+  overflow-x: auto;
+  margin: 0;
+}
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--code-fg);
+}
+
+.comment { color: #5c6e82; }
+.cmd     { color: #79c0ff; }
+.flag    { color: #ffa657; }
+.str     { color: #a5d6ff; }
+.kw      { color: #f97583; }
+
+/* ── Callouts ── */
+.callout {
+  border-left: 4px solid;
+  padding: 14px 18px;
+  border-radius: 0 8px 8px 0;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.callout.tip    { border-color: var(--green); background: #f0fff4; }
+.callout.warn   { border-color: var(--yellow); background: #fffff0; }
+.callout.info   { border-color: var(--teal); background: #e8f7fc; }
+.callout.danger { border-color: var(--red); background: #fff5f5; }
+.callout strong { font-size: 11px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; display: block; margin-bottom: 4px; text-transform: uppercase; }
+.callout.tip    strong { color: var(--green); }
+.callout.warn   strong { color: var(--yellow); }
+.callout.info   strong { color: var(--teal); }
+.callout.danger strong { color: var(--red); }
+.callout p { color: #4a5568; margin: 0; }
+
+/* ── Exercise cards ── */
+.exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.exercise-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  position: relative;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  border-color: var(--accent);
+}
+.ex-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.ex-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+.ex-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.ex-badge {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* ── File tree ── */
+.file-tree {
+  background: var(--code-bg);
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 2;
+  border: 1px solid #2d3748;
+  margin: 16px 0;
+}
+.ft-dir  { color: var(--accent); }
+.ft-file { color: var(--code-fg); }
+.ft-note { color: #5c6e82; font-size: 11px; }
+
+/* ── Cheatsheet table ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+}
+th {
+  background: var(--blue);
+  color: white;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+}
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: #f7fafc; }
+td code {
+  background: #edf2f7;
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--blue);
+}
+td:first-child code { color: var(--teal); }
+
+/* ── Progress checklist ── */
+.checklist { list-style: none; margin: 16px 0; }
+.checklist li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  cursor: pointer;
+}
+.checklist li:last-child { border-bottom: none; }
+.check-box {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.checklist li.done .check-box {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+  font-size: 11px;
+}
+.checklist li.done span { text-decoration: line-through; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="aws-badge">AWS</div>
+    CodeCommit Hands-On Lab
+  </div>
+  <ul class="topbar-links">
+    <li><a href="#setup">Setup</a></li>
+    <li><a href="#exercises">Exercises</a></li>
+    <li><a href="#branching">Branching</a></li>
+    <li><a href="#pr">Pull Requests</a></li>
+    <li><a href="#cheatsheet">Cheatsheet</a></li>
+  </ul>
+</header>
+
+<div class="layout">
+<!-- ── SIDEBAR ── -->
+<aside>
+  <div class="sidebar-section-title">Getting Started</div>
+  <a class="sidebar-link" href="#prereq"><span class="dot"></span>Prerequisites</a>
+  <a class="sidebar-link" href="#project"><span class="dot"></span>Project Overview</a>
+  <a class="sidebar-link" href="#setup"><span class="dot"></span>Repo Setup</a>
+  <a class="sidebar-link" href="#first-push"><span class="dot"></span>First Push</a>
+
+  <div class="sidebar-section-title">Core Exercises</div>
+  <a class="sidebar-link" href="#ex1"><span class="dot"></span>Ex 1 — Clone & Commit</a>
+  <a class="sidebar-link" href="#ex2"><span class="dot"></span>Ex 2 — Feature Branch</a>
+  <a class="sidebar-link" href="#ex3"><span class="dot"></span>Ex 3 — Fix Bugs</a>
+  <a class="sidebar-link" href="#ex4"><span class="dot"></span>Ex 4 — Pull Request</a>
+  <a class="sidebar-link" href="#ex5"><span class="dot"></span>Ex 5 — Merge Conflict</a>
+  <a class="sidebar-link" href="#ex6"><span class="dot"></span>Ex 6 — Tags & Release</a>
+  <a class="sidebar-link" href="#ex7"><span class="dot"></span>Ex 7 — Notifications</a>
+  <a class="sidebar-link" href="#ex8"><span class="dot"></span>Ex 8 — Triggers</a>
+
+  <div class="sidebar-section-title">Reference</div>
+  <a class="sidebar-link" href="#cheatsheet"><span class="dot"></span>Command Cheatsheet</a>
+  <a class="sidebar-link" href="#checklist"><span class="dot"></span>Progress Checklist</a>
+</aside>
+
+<!-- ── MAIN ── -->
+<main>
+
+<!-- Hero -->
+<div class="hero-card">
+  <div class="hero-eyebrow">AWS CodeCommit · Hands-On Practice Lab</div>
+  <h1>TaskFlow API<br/>CodeCommit Lab</h1>
+  <p>A real Flask REST API with multiple files, tests, a Dockerfile, and intentional bugs — purpose-built so you can practice every CodeCommit workflow from first push to pull requests.</p>
+  <div class="hero-tags">
+    <div class="hero-tag">Clone / Push / Pull</div>
+    <div class="hero-tag">Branching</div>
+    <div class="hero-tag">Pull Requests</div>
+    <div class="hero-tag">Merge Conflicts</div>
+    <div class="hero-tag">Tags & Releases</div>
+    <div class="hero-tag">Triggers & Notifications</div>
+  </div>
+</div>
+
+<!-- ── PREREQUISITES ── -->
+<section class="section" id="prereq">
+  <div class="section-label">Before You Start</div>
+  <h2>Prerequisites</h2>
+
+  <p>Make sure all of these are ready before starting the exercises.</p>
+
+  <h3>1. AWS CLI configured</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># Verify AWS CLI is installed and configured</span>
+<span class="cmd">aws</span> <span class="flag">--version</span>
+<span class="cmd">aws</span> sts get-caller-identity   <span class="comment"># should return your account ID</span></code></pre>
+  </div>
+
+  <h3>2. CodeCommit HTTPS credential helper</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># Add to ~/.gitconfig  (run once)</span>
+<span class="cmd">git</span> config <span class="flag">--global</span> credential.helper \
+  '!aws codecommit credential-helper $@'
+<span class="cmd">git</span> config <span class="flag">--global</span> credential.UseHttpPath <span class="str">true</span></code></pre>
+  </div>
+
+  <div class="callout info">
+    <strong>Alternative: SSH keys</strong>
+    <p>You can also use SSH keys uploaded to IAM → Security credentials → SSH keys for CodeCommit. HTTPS credential helper is simpler for most lab setups.</p>
+  </div>
+
+  <h3>3. IAM permissions needed</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code>{
+  <span class="str">"Effect"</span>: <span class="str">"Allow"</span>,
+  <span class="str">"Action"</span>: [
+    <span class="str">"codecommit:*"</span>      <span class="comment">// full access for lab purposes</span>
+  ],
+  <span class="str">"Resource"</span>: <span class="str">"*"</span>
+}</code></pre>
+  </div>
+
+  <div class="callout warn">
+    <strong>Lab vs Production</strong>
+    <p>codecommit:* is fine for a personal practice lab. In production, scope permissions to specific repositories and actions.</p>
+  </div>
+</section>
+
+<!-- ── PROJECT OVERVIEW ── -->
+<section class="section" id="project">
+  <div class="section-label">What You Have</div>
+  <h2>Project Structure</h2>
+
+  <p>The <strong>TaskFlow API</strong> dummy project gives you a realistic multi-file Python project to work with. It contains real code, real tests, intentional bugs, and a Dockerfile.</p>
+
+  <div class="file-tree">
+<span class="ft-dir">codecommit-practice/</span>
+├── <span class="ft-dir">app/</span>
+│   ├── <span class="ft-file">app.py</span>          <span class="ft-note">← Flask REST API (GET/POST/PUT/DELETE /tasks)</span>
+│   ├── <span class="ft-file">config.py</span>       <span class="ft-note">← Env-based configuration</span>
+│   ├── <span class="ft-file">utils.py</span>        <span class="ft-note">← Validators, paginator, timestamp helpers</span>
+│   └── <span class="ft-file">notifications.py</span> <span class="ft-note">← 3 intentional bugs for Ex 3</span>
+├── <span class="ft-dir">tests/</span>
+│   └── <span class="ft-file">test_app.py</span>     <span class="ft-note">← 20+ pytest tests</span>
+├── <span class="ft-file">Dockerfile</span>
+├── <span class="ft-file">requirements.txt</span>
+├── <span class="ft-file">CHANGELOG.md</span>
+└── <span class="ft-file">.gitignore</span>
+  </div>
+
+  <h3>The 3 bugs in notifications.py (for Exercise 3)</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">python</span></div>
+    <pre><code><span class="comment"># BUG 1 (line ~28): wrong log level passed</span>
+<span class="kw">def</span> notify_task_created(self, task_id):
+    <span class="kw">return</span> self._log(level=<span class="str">"debug"</span>, ...)   <span class="comment"># ← should be "info"</span>
+
+<span class="comment"># BUG 2 (line ~33): missing return statement</span>
+<span class="kw">def</span> notify_task_completed(self, task_id):
+    self._log(...)                          <span class="comment"># ← caller gets None</span>
+
+<span class="comment"># BUG 3 (line ~39): typo in dict key</span>
+entry = {<span class="str">"level"</span>: <span class="str">"warn"</span>, <span class="str">"messge"</span>: ...}  <span class="comment"># ← should be "message"</span></code></pre>
+  </div>
+</section>
+
+<!-- ── REPO SETUP ── -->
+<section class="section" id="setup">
+  <div class="section-label">Step 1</div>
+  <h2>Create the CodeCommit Repository</h2>
+
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-left"><div class="step-circle">1</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Create the repository via AWS CLI</div>
+        <div class="step-desc">Creates a new empty CodeCommit repo in your default region.</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code><span class="cmd">aws</span> codecommit create-repository \
+  <span class="flag">--repository-name</span> <span class="str">taskflow-api</span> \
+  <span class="flag">--repository-description</span> <span class="str">"TaskFlow API - CodeCommit practice"</span> \
+  <span class="flag">--region</span> ap-south-1
+
+<span class="comment"># Note the cloneUrlHttp from the output</span></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-left"><div class="step-circle">2</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Verify the repo was created</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code><span class="cmd">aws</span> codecommit get-repository \
+  <span class="flag">--repository-name</span> taskflow-api
+
+<span class="comment"># List all your CodeCommit repos</span>
+<span class="cmd">aws</span> codecommit list-repositories</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-left"><div class="step-circle">3</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Clone the empty repository</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code><span class="cmd">git</span> clone \
+  https://git-codecommit.ap-south-1.amazonaws.com/v1/repos/taskflow-api
+
+<span class="cmd">cd</span> taskflow-api</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FIRST PUSH ── -->
+<section class="section" id="first-push">
+  <div class="section-label">Step 2</div>
+  <h2>First Push — Seed the Repository</h2>
+
+  <div class="callout tip">
+    <strong>Copy the dummy project files</strong>
+    <p>Copy all files from the downloaded <code>codecommit-practice/</code> folder into your cloned <code>taskflow-api/</code> directory. Do NOT copy the folder itself — copy its contents.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># Inside your cloned taskflow-api/ directory</span>
+<span class="comment"># Copy all dummy project files here, then:</span>
+
+<span class="cmd">git</span> status                          <span class="comment"># see untracked files</span>
+<span class="cmd">git</span> add .                           <span class="comment"># stage everything</span>
+<span class="cmd">git</span> status                          <span class="comment"># verify staged files</span>
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"feat: initial TaskFlow API project"</span>
+<span class="cmd">git</span> push origin main                <span class="comment"># push to CodeCommit</span></code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># Verify push via CLI</span>
+<span class="cmd">aws</span> codecommit get-branch \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--branch-name</span> main
+
+<span class="comment"># Or list commits</span>
+<span class="cmd">aws</span> codecommit list-branches \
+  <span class="flag">--repository-name</span> taskflow-api</code></pre>
+  </div>
+</section>
+
+<!-- ── EXERCISES ── -->
+<section class="section" id="exercises">
+  <div class="section-label">Exercises Overview</div>
+  <h2>All 8 Practice Exercises</h2>
+  <p>Complete these in order — each builds on the previous. All exercises use only the TaskFlow API project files you already have.</p>
+
+  <div class="exercise-grid">
+    <div class="exercise-card">
+      <div class="ex-num">Exercise 01</div>
+      <div class="ex-title">Clone &amp; Commit</div>
+      <div class="ex-desc">Edit a file, stage, commit, push. See changes in AWS Console.</div>
+      <span class="ex-badge">Beginner</span>
+    </div>
+    <div class="exercise-card">
+      <div class="ex-num">Exercise 02</div>
+      <div class="ex-title">Feature Branch</div>
+      <div class="ex-desc">Create feature/add-search branch, add search endpoint, push branch.</div>
+      <span class="ex-badge">Beginner</span>
+    </div>
+    <div class="exercise-card">
+      <div class="ex-num">Exercise 03</div>
+      <div class="ex-title">Fix Bugs</div>
+      <div class="ex-desc">Find and fix 3 bugs in notifications.py on a hotfix branch.</div>
+      <span class="ex-badge">Intermediate</span>
+    </div>
+    <div class="exercise-card">
+      <div class="ex-num">Exercise 04</div>
+      <div class="ex-title">Pull Request</div>
+      <div class="ex-desc">Raise a PR, add description, approve, merge via Console &amp; CLI.</div>
+      <span class="ex-badge">Intermediate</span>
+    </div>
+    <div class="exercise-card">
+      <div class="ex-num">Exercise 05</div>
+      <div class="ex-title">Merge Conflict</div>
+      <div class="ex-desc">Create two branches that edit the same line. Resolve the conflict.</div>
+      <span class="ex-badge">Intermediate</span>
+    </div>
+    <div class="exercise-card">
+      <div class="ex-num">Exercise 06</div>
+      <div class="ex-title">Tags &amp; Releases</div>
+      <div class="ex-desc">Tag a commit as v1.0.0, push the tag, list tags via CLI.</div>
+      <span class="ex-badge">Beginner</span>
+    </div>
+    <div class="exercise-card">
+      <div class="ex-num">Exercise 07</div>
+      <div class="ex-title">SNS Notifications</div>
+      <div class="ex-desc">Set up CodeCommit triggers to send push events to an SNS topic.</div>
+      <span class="ex-badge">Advanced</span>
+    </div>
+    <div class="exercise-card">
+      <div class="ex-num">Exercise 08</div>
+      <div class="ex-title">Cross-Repo Clone</div>
+      <div class="ex-desc">Inspect commit history, diff two commits, view blame via CLI.</div>
+      <span class="ex-badge">Intermediate</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── EX 1 ── -->
+<section class="section" id="ex1">
+  <div class="section-label">Exercise 01</div>
+  <h2>Clone &amp; Commit</h2>
+  <p>The most fundamental CodeCommit workflow: edit a file locally, commit it, push it, and verify the change in the AWS Console.</p>
+
+  <h3>Task: Update the app version in config.py</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># 1. Make a visible change</span>
+<span class="cmd">sed</span> <span class="flag">-i</span> <span class="str">'s/version": "1.0.0"/version": "1.0.1"/'</span> app/app.py
+
+<span class="comment"># Also update CHANGELOG.md</span>
+<span class="cmd">echo</span> <span class="str">"## [1.0.1] - $(date +%Y-%m-%d)"</span> >> CHANGELOG.md
+<span class="cmd">echo</span> <span class="str">"### Changed"</span> >> CHANGELOG.md
+<span class="cmd">echo</span> <span class="str">"- Bumped version to 1.0.1"</span> >> CHANGELOG.md
+
+<span class="comment"># 2. Stage specific files (not git add .)</span>
+<span class="cmd">git</span> add app/app.py CHANGELOG.md
+
+<span class="comment"># 3. Check what's staged</span>
+<span class="cmd">git</span> diff <span class="flag">--cached</span>
+
+<span class="comment"># 4. Commit with a meaningful message</span>
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"chore: bump version to 1.0.1"</span>
+
+<span class="comment"># 5. Push to CodeCommit</span>
+<span class="cmd">git</span> push origin main
+
+<span class="comment"># 6. Verify via CLI</span>
+<span class="cmd">aws</span> codecommit get-branch \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--branch-name</span> main</code></pre>
+  </div>
+
+  <div class="callout tip">
+    <strong>What to check in AWS Console</strong>
+    <p>Go to CodeCommit → taskflow-api → Commits. You should see your new commit at the top with the message "chore: bump version to 1.0.1". Click it to see the diff.</p>
+  </div>
+
+  <h3>Bonus: View commit details via CLI</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># Get the latest commit ID</span>
+COMMIT_ID=$(aws codecommit get-branch \
+  --repository-name taskflow-api \
+  --branch-name main \
+  --query 'branch.commitId' \
+  --output text)
+
+<span class="comment"># Get full commit details</span>
+<span class="cmd">aws</span> codecommit get-commit \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--commit-id</span> $COMMIT_ID</code></pre>
+  </div>
+</section>
+
+<!-- ── EX 2 ── -->
+<section class="section" id="ex2">
+  <div class="section-label">Exercise 02</div>
+  <h2>Feature Branch</h2>
+  <p>Create a feature branch, add a new endpoint, push the branch to CodeCommit, and verify the branch appears independently of main.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># 1. Create and switch to a new branch</span>
+<span class="cmd">git</span> checkout <span class="flag">-b</span> feature/add-search
+
+<span class="comment"># 2. Add a search endpoint to app/app.py</span>
+<span class="comment">#    Open app/app.py and add this block before "if __name__":</span></code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># Add this new endpoint to app/app.py</span>
+@app.route(<span class="str">"/tasks/search"</span>, methods=[<span class="str">"GET"</span>])
+<span class="kw">def</span> search_tasks():
+    <span class="str">"""Search tasks by keyword in title or description."""</span>
+    query = request.args.get(<span class="str">"q"</span>, <span class="str">""</span>).lower()
+    <span class="kw">if not</span> query:
+        <span class="kw">return</span> jsonify({<span class="str">"error"</span>: <span class="str">"q parameter is required"</span>}), 400
+    results = [
+        t <span class="kw">for</span> t <span class="kw">in</span> TASKS.values()
+        <span class="kw">if</span> query <span class="kw">in</span> t[<span class="str">"title"</span>].lower() <span class="kw">or</span> query <span class="kw">in</span> t[<span class="str">"description"</span>].lower()
+    ]
+    <span class="kw">return</span> jsonify({<span class="str">"results"</span>: results, <span class="str">"count"</span>: len(results)})</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># 3. Stage and commit</span>
+<span class="cmd">git</span> add app/app.py
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"feat: add GET /tasks/search endpoint"</span>
+
+<span class="comment"># 4. Push the branch to CodeCommit</span>
+<span class="cmd">git</span> push origin feature/add-search
+
+<span class="comment"># 5. Verify the branch exists in CodeCommit</span>
+<span class="cmd">aws</span> codecommit list-branches \
+  <span class="flag">--repository-name</span> taskflow-api
+
+<span class="comment"># 6. Compare branches via CLI</span>
+<span class="cmd">aws</span> codecommit get-differences \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--before-commit-specifier</span> main \
+  <span class="flag">--after-commit-specifier</span> feature/add-search</code></pre>
+  </div>
+</section>
+
+<!-- ── EX 3 ── -->
+<section class="section" id="ex3">
+  <div class="section-label">Exercise 03</div>
+  <h2>Fix Bugs on a Hotfix Branch</h2>
+  <p>The file <code>app/notifications.py</code> has 3 intentional bugs. Create a hotfix branch from main, fix all 3, and push.</p>
+
+  <div class="callout danger">
+    <strong>The 3 bugs to find and fix</strong>
+    <p><b>Bug 1</b> — <code>notify_task_created</code>: level should be <code>"info"</code>, not <code>"debug"</code><br/>
+    <b>Bug 2</b> — <code>notify_task_completed</code>: missing <code>return</code> before <code>self._log(...)</code><br/>
+    <b>Bug 3</b> — <code>notify_task_deleted</code>: dict key is <code>"messge"</code>, should be <code>"message"</code></p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># 1. Switch back to main first (hotfix branches from main)</span>
+<span class="cmd">git</span> checkout main
+<span class="cmd">git</span> pull origin main
+
+<span class="comment"># 2. Create hotfix branch</span>
+<span class="cmd">git</span> checkout <span class="flag">-b</span> hotfix/fix-notifications
+
+<span class="comment"># 3. Open app/notifications.py and fix all 3 bugs</span>
+<span class="comment">#    (see the bug locations in the file comments)</span>
+
+<span class="comment"># 4. Commit each fix separately for clear history</span>
+<span class="cmd">git</span> add app/notifications.py
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"fix: use 'info' level in notify_task_created"</span>
+
+<span class="comment"># (make your fix 2 edit, then:)</span>
+<span class="cmd">git</span> add app/notifications.py
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"fix: add missing return in notify_task_completed"</span>
+
+<span class="comment"># (make your fix 3 edit, then:)</span>
+<span class="cmd">git</span> add app/notifications.py
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"fix: correct typo 'messge' → 'message' in notify_task_deleted"</span>
+
+<span class="comment"># 5. Push the hotfix branch</span>
+<span class="cmd">git</span> push origin hotfix/fix-notifications
+
+<span class="comment"># 6. See commit log for this branch</span>
+<span class="cmd">git</span> log <span class="flag">--oneline</span> <span class="flag">--graph</span> origin/main..hotfix/fix-notifications</code></pre>
+  </div>
+</section>
+
+<!-- ── EX 4 ── -->
+<section class="section" id="ex4">
+  <div class="section-label">Exercise 04</div>
+  <h2>Pull Requests</h2>
+  <p>Create, review, and merge a Pull Request entirely via the AWS CLI — then also try it in the Console.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># 1. Create a Pull Request from hotfix → main</span>
+<span class="cmd">aws</span> codecommit create-pull-request \
+  <span class="flag">--title</span> <span class="str">"fix: resolve 3 bugs in notifications.py"</span> \
+  <span class="flag">--description</span> <span class="str">"Fixes incorrect log level, missing return, and typo in Notifier class"</span> \
+  <span class="flag">--targets</span> repositoryName=taskflow-api,sourceReference=hotfix/fix-notifications,destinationReference=main
+
+<span class="comment"># Note the pullRequestId from output (e.g. "1")</span>
+
+<span class="comment"># 2. List all open PRs</span>
+<span class="cmd">aws</span> codecommit list-pull-requests \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--pull-request-status</span> OPEN
+
+<span class="comment"># 3. Get PR details</span>
+<span class="cmd">aws</span> codecommit get-pull-request \
+  <span class="flag">--pull-request-id</span> 1
+
+<span class="comment"># 4. Post a review comment on the PR</span>
+<span class="cmd">aws</span> codecommit post-comment-for-pull-request \
+  <span class="flag">--pull-request-id</span> 1 \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--before-commit-id</span> $(git rev-parse origin/main) \
+  <span class="flag">--after-commit-id</span>  $(git rev-parse origin/hotfix/fix-notifications) \
+  <span class="flag">--content</span> <span class="str">"LGTM! All 3 bugs fixed correctly."</span>
+
+<span class="comment"># 5. Approve the PR</span>
+<span class="cmd">aws</span> codecommit update-pull-request-approval-state \
+  <span class="flag">--pull-request-id</span> 1 \
+  <span class="flag">--revision-id</span> $(aws codecommit get-pull-request --pull-request-id 1 \
+    --query 'pullRequest.revisionId' --output text) \
+  <span class="flag">--approval-state</span> APPROVE
+
+<span class="comment"># 6. Merge the PR (squash merge)</span>
+<span class="cmd">aws</span> codecommit merge-pull-request-by-squash \
+  <span class="flag">--pull-request-id</span> 1 \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--source-commit-specifier</span> hotfix/fix-notifications \
+  <span class="flag">--destination-commit-specifier</span> main \
+  <span class="flag">--commit-message</span> <span class="str">"fix: resolve 3 notification bugs (#1)"</span>
+
+<span class="comment"># 7. Pull merged changes locally</span>
+<span class="cmd">git</span> checkout main && git pull origin main</code></pre>
+  </div>
+
+  <div class="callout info">
+    <strong>Three merge strategies available</strong>
+    <p><code>merge-pull-request-by-fast-forward</code> — no merge commit, linear history<br/>
+    <code>merge-pull-request-by-squash</code> — squashes all commits into one<br/>
+    <code>merge-pull-request-by-three-way</code> — explicit merge commit (GitHub-style)</p>
+  </div>
+</section>
+
+<!-- ── EX 5 ── -->
+<section class="section" id="ex5">
+  <div class="section-label">Exercise 05</div>
+  <h2>Create &amp; Resolve a Merge Conflict</h2>
+  <p>Two developers edit the same line on different branches. Practice resolving the conflict before merging.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment">## ── Branch A: change MAX_TASKS to 500 ──────────────────────────</span>
+<span class="cmd">git</span> checkout main && git pull origin main
+<span class="cmd">git</span> checkout <span class="flag">-b</span> conflict/branch-a
+
+<span class="comment"># Edit app/config.py line:  MAX_TASKS = int(os.getenv("MAX_TASKS", 1000))</span>
+<span class="comment"># Change 1000  →  500</span>
+<span class="cmd">sed</span> <span class="flag">-i</span> <span class="str">'s/MAX_TASKS", 1000/MAX_TASKS", 500/'</span> app/config.py
+<span class="cmd">git</span> add app/config.py
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"config: reduce MAX_TASKS to 500"</span>
+<span class="cmd">git</span> push origin conflict/branch-a
+
+<span class="comment">## ── Branch B: change MAX_TASKS to 2000 ─────────────────────────</span>
+<span class="cmd">git</span> checkout main
+<span class="cmd">git</span> checkout <span class="flag">-b</span> conflict/branch-b
+
+<span class="comment"># Edit the SAME line in app/config.py: change 1000  →  2000</span>
+<span class="cmd">sed</span> <span class="flag">-i</span> <span class="str">'s/MAX_TASKS", 1000/MAX_TASKS", 2000/'</span> app/config.py
+<span class="cmd">git</span> add app/config.py
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"config: increase MAX_TASKS to 2000"</span>
+<span class="cmd">git</span> push origin conflict/branch-b
+
+<span class="comment">## ── Merge Branch A into main first (succeeds) ───────────────────</span>
+<span class="cmd">git</span> checkout main
+<span class="cmd">git</span> merge conflict/branch-a
+<span class="cmd">git</span> push origin main
+
+<span class="comment">## ── Try to merge Branch B (this will CONFLICT) ──────────────────</span>
+<span class="cmd">git</span> merge conflict/branch-b
+<span class="comment"># Git will report: CONFLICT (content): Merge conflict in app/config.py</span>
+
+<span class="comment">## ── Open app/config.py, find the conflict markers:</span>
+<span class="comment"># &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+<span class="comment"># MAX_TASKS = int(os.getenv("MAX_TASKS", 500))</span>
+<span class="comment"># =======</span>
+<span class="comment"># MAX_TASKS = int(os.getenv("MAX_TASKS", 2000))</span>
+<span class="comment"># &gt;&gt;&gt;&gt;&gt;&gt;&gt; conflict/branch-b</span>
+
+<span class="comment">## ── Decide: keep 2000, remove conflict markers ───────────────────</span>
+<span class="cmd">git</span> add app/config.py
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"merge: resolve MAX_TASKS conflict, keep 2000"</span>
+<span class="cmd">git</span> push origin main</code></pre>
+  </div>
+</section>
+
+<!-- ── EX 6 ── -->
+<section class="section" id="ex6">
+  <div class="section-label">Exercise 06</div>
+  <h2>Tags &amp; Releases</h2>
+  <p>Tag a stable commit as a release version and explore tags via CLI.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># 1. Create an annotated tag on the current main HEAD</span>
+<span class="cmd">git</span> checkout main && git pull origin main
+<span class="cmd">git</span> tag <span class="flag">-a</span> v1.0.0 <span class="flag">-m</span> <span class="str">"Release v1.0.0 - Initial stable release"</span>
+
+<span class="comment"># 2. Push the tag to CodeCommit</span>
+<span class="cmd">git</span> push origin v1.0.0
+
+<span class="comment"># 3. Push ALL local tags at once</span>
+<span class="cmd">git</span> push origin <span class="flag">--tags</span>
+
+<span class="comment"># 4. List tags via CLI</span>
+<span class="cmd">aws</span> codecommit list-tags-for-resource \
+  <span class="flag">--resource-arn</span> $(aws codecommit get-repository \
+    --repository-name taskflow-api \
+    --query 'repositoryMetadata.Arn' --output text)
+
+<span class="comment"># 5. Get commit behind a tag</span>
+<span class="cmd">git</span> show v1.0.0 <span class="flag">--stat</span>
+
+<span class="comment"># 6. Create a patch release after another fix</span>
+<span class="cmd">git</span> tag <span class="flag">-a</span> v1.0.1 <span class="flag">-m</span> <span class="str">"Release v1.0.1 - Bug fixes"</span>
+<span class="cmd">git</span> push origin v1.0.1
+
+<span class="comment"># 7. Checkout code at a specific tag (detached HEAD)</span>
+<span class="cmd">git</span> checkout v1.0.0
+<span class="cmd">git</span> checkout main   <span class="comment"># return to main</span></code></pre>
+  </div>
+</section>
+
+<!-- ── EX 7 ── -->
+<section class="section" id="ex7">
+  <div class="section-label">Exercise 07</div>
+  <h2>SNS Notifications / Triggers</h2>
+  <p>Set up a CodeCommit trigger that sends a notification to an SNS topic on every push to main. This is the foundation for CI/CD integrations.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># 1. Create an SNS topic</span>
+TOPIC_ARN=$(aws sns create-topic \
+  <span class="flag">--name</span> taskflow-codecommit-events \
+  <span class="flag">--query</span> TopicArn <span class="flag">--output</span> text)
+
+echo "Topic ARN: $TOPIC_ARN"
+
+<span class="comment"># 2. Subscribe your email to the topic</span>
+<span class="cmd">aws</span> sns subscribe \
+  <span class="flag">--topic-arn</span> $TOPIC_ARN \
+  <span class="flag">--protocol</span> email \
+  <span class="flag">--notification-endpoint</span> <span class="str"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6f16001a1d2f0a020e0603410c0002">[email&#160;protected]</a></span>
+<span class="comment"># Check your email and confirm the subscription</span>
+
+<span class="comment"># 3. Grant CodeCommit permission to publish to the topic</span>
+<span class="cmd">aws</span> sns set-topic-attributes \
+  <span class="flag">--topic-arn</span> $TOPIC_ARN \
+  <span class="flag">--attribute-name</span> Policy \
+  <span class="flag">--attribute-value</span> <span class="str">'{
+    "Version":"2012-10-17",
+    "Statement":[{
+      "Effect":"Allow",
+      "Principal":{"Service":"codecommit.amazonaws.com"},
+      "Action":"sns:Publish",
+      "Resource":"'</span>$TOPIC_ARN<span class="str">'"
+    }]
+  }'</span>
+
+<span class="comment"># 4. Create the trigger on the repository</span>
+<span class="cmd">aws</span> codecommit put-repository-triggers \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--triggers</span> <span class="str">'[{
+    "name": "push-to-main",
+    "destinationArn": "'</span>$TOPIC_ARN<span class="str">'",
+    "branches": ["main"],
+    "events": ["updateReference"],
+    "customData": "taskflow-push"
+  }]'</span>
+
+<span class="comment"># 5. Verify triggers are set</span>
+<span class="cmd">aws</span> codecommit get-repository-triggers \
+  <span class="flag">--repository-name</span> taskflow-api
+
+<span class="comment"># 6. Test: make a commit and push to main — check your email!</span>
+<span class="cmd">echo</span> <span class="str">"# Trigger test $(date)"</span> >> CHANGELOG.md
+<span class="cmd">git</span> add CHANGELOG.md
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"test: trigger notification"</span>
+<span class="cmd">git</span> push origin main</code></pre>
+  </div>
+</section>
+
+<!-- ── EX 8 ── -->
+<section class="section" id="ex8">
+  <div class="section-label">Exercise 08</div>
+  <h2>Inspect History &amp; Diff</h2>
+  <p>Practice reading commit history, diffing commits, and viewing file blame — all via the CLI.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code><span class="comment"># 1. List recent commits on main</span>
+<span class="cmd">aws</span> codecommit get-differences \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--after-commit-specifier</span> main
+
+<span class="comment"># 2. Get commits between two points</span>
+<span class="cmd">aws</span> codecommit get-commit-history \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--commit-id</span> main
+
+<span class="comment"># 3. Diff two specific commits</span>
+BEFORE=$(git rev-parse HEAD~2)
+AFTER=$(git rev-parse HEAD)
+
+<span class="cmd">aws</span> codecommit get-differences \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--before-commit-specifier</span> $BEFORE \
+  <span class="flag">--after-commit-specifier</span> $AFTER
+
+<span class="comment"># 4. Get the content of a specific file at a commit</span>
+<span class="cmd">aws</span> codecommit get-file \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--commit-specifier</span> main \
+  <span class="flag">--file-path</span> app/app.py \
+  <span class="flag">--query</span> fileContent \
+  <span class="flag">--output</span> text | base64 <span class="flag">--decode</span>
+
+<span class="comment"># 5. View the file tree at a commit</span>
+<span class="cmd">aws</span> codecommit get-folder \
+  <span class="flag">--repository-name</span> taskflow-api \
+  <span class="flag">--commit-specifier</span> main \
+  <span class="flag">--folder-path</span> /
+
+<span class="comment"># 6. View blame (who changed each line)</span>
+<span class="cmd">git</span> blame app/app.py
+
+<span class="comment"># 7. Search commits by message</span>
+<span class="cmd">git</span> log <span class="flag">--oneline</span> <span class="flag">--grep</span>=<span class="str">"fix:"</span>
+
+<span class="comment"># 8. See which files changed in the last 3 commits</span>
+<span class="cmd">git</span> log <span class="flag">--name-only</span> <span class="flag">--oneline</span> <span class="flag">-3</span></code></pre>
+  </div>
+</section>
+
+<!-- ── CHEATSHEET ── -->
+<section class="section" id="cheatsheet">
+  <div class="section-label">Quick Reference</div>
+  <h2>CodeCommit CLI Cheatsheet</h2>
+
+  <h3>Repository Operations</h3>
+  <table>
+    <tr><th>Task</th><th>Command</th></tr>
+    <tr><td>Create repo</td><td><code>aws codecommit create-repository --repository-name NAME</code></td></tr>
+    <tr><td>List repos</td><td><code>aws codecommit list-repositories</code></td></tr>
+    <tr><td>Get repo info</td><td><code>aws codecommit get-repository --repository-name NAME</code></td></tr>
+    <tr><td>Delete repo</td><td><code>aws codecommit delete-repository --repository-name NAME</code></td></tr>
+    <tr><td>Update description</td><td><code>aws codecommit update-repository-description --repository-name NAME --repository-description "DESC"</code></td></tr>
+  </table>
+
+  <h3>Branch Operations</h3>
+  <table>
+    <tr><th>Task</th><th>Command</th></tr>
+    <tr><td>List branches</td><td><code>aws codecommit list-branches --repository-name NAME</code></td></tr>
+    <tr><td>Get branch</td><td><code>aws codecommit get-branch --repository-name NAME --branch-name BRANCH</code></td></tr>
+    <tr><td>Create branch</td><td><code>aws codecommit create-branch --repository-name NAME --branch-name BRANCH --commit-id COMMIT_ID</code></td></tr>
+    <tr><td>Delete branch</td><td><code>aws codecommit delete-branch --repository-name NAME --branch-name BRANCH</code></td></tr>
+    <tr><td>Diff branches</td><td><code>aws codecommit get-differences --repository-name NAME --before-commit-specifier main --after-commit-specifier BRANCH</code></td></tr>
+  </table>
+
+  <h3>Pull Request Operations</h3>
+  <table>
+    <tr><th>Task</th><th>Command</th></tr>
+    <tr><td>Create PR</td><td><code>aws codecommit create-pull-request --title "TITLE" --targets repositoryName=NAME,sourceReference=SRC,destinationReference=DEST</code></td></tr>
+    <tr><td>List PRs</td><td><code>aws codecommit list-pull-requests --repository-name NAME --pull-request-status OPEN</code></td></tr>
+    <tr><td>Get PR</td><td><code>aws codecommit get-pull-request --pull-request-id ID</code></td></tr>
+    <tr><td>Approve PR</td><td><code>aws codecommit update-pull-request-approval-state --pull-request-id ID --revision-id REV --approval-state APPROVE</code></td></tr>
+    <tr><td>Merge (squash)</td><td><code>aws codecommit merge-pull-request-by-squash --pull-request-id ID --repository-name NAME</code></td></tr>
+    <tr><td>Close PR</td><td><code>aws codecommit update-pull-request-status --pull-request-id ID --pull-request-status CLOSED</code></td></tr>
+  </table>
+
+  <h3>Commit &amp; File Operations</h3>
+  <table>
+    <tr><th>Task</th><th>Command</th></tr>
+    <tr><td>Get commit</td><td><code>aws codecommit get-commit --repository-name NAME --commit-id COMMIT_ID</code></td></tr>
+    <tr><td>Get file content</td><td><code>aws codecommit get-file --repository-name NAME --file-path PATH --commit-specifier main</code></td></tr>
+    <tr><td>List folder</td><td><code>aws codecommit get-folder --repository-name NAME --folder-path /</code></td></tr>
+    <tr><td>View triggers</td><td><code>aws codecommit get-repository-triggers --repository-name NAME</code></td></tr>
+    <tr><td>Remove triggers</td><td><code>aws codecommit put-repository-triggers --repository-name NAME --triggers '[]'</code></td></tr>
+  </table>
+</section>
+
+<!-- ── CHECKLIST ── -->
+<section class="section" id="checklist">
+  <div class="section-label">Track Your Progress</div>
+  <h2>Practice Checklist</h2>
+  <p>Click each item to mark it complete as you work through the exercises.</p>
+
+  <ul class="checklist" id="chk">
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Configured HTTPS credential helper for CodeCommit</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Created CodeCommit repository via AWS CLI</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Pushed initial project code to main branch</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Exercise 01 — Edited a file, committed, pushed, verified in Console</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Exercise 02 — Created feature/add-search branch and pushed it</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Exercise 03 — Fixed all 3 bugs in notifications.py on hotfix branch</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Exercise 04 — Created, approved, and merged a Pull Request via CLI</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Exercise 05 — Created and resolved a merge conflict</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Exercise 06 — Tagged a release as v1.0.0 and pushed the tag</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Exercise 07 — Set up SNS trigger, received push notification email</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Exercise 08 — Inspected diff, history, and file content via CLI</span></li>
+    <li onclick="toggle(this)"><div class="check-box"></div><span>Cleaned up: deleted test branches, removed triggers</span></li>
+  </ul>
+
+  <div class="callout tip">
+    <strong>Cleanup when done</strong>
+    <p>Run <code>aws codecommit delete-repository --repository-name taskflow-api</code> to remove everything and avoid any costs. CodeCommit charges are minimal but good habit to clean up after labs.</p>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.rem
